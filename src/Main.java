@@ -29,7 +29,7 @@ public class Main {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		Processor p = new Processor(rt,m);
+		//Processor p = new Processor(rt,m);
 		for(Register r:rt.reg){
 			System.out.println(r.getValue()+"\n");
 		}

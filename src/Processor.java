@@ -1,11 +1,14 @@
+
 public class Processor {
 
 	String [] insTable;
 	RegTable rt;
 	Memory m;
-	public Processor(RegTable rt, Memory m) {
+	DataCache datacache;
+	public Processor(RegTable rt, Memory m , DataCache datacache) {
 		this.rt = rt;
 		this.m = m;
+		this.datacache = datacache;
 		process();
 	}
 	public void process(){
