@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 
 public class Processor {
 
@@ -5,6 +7,8 @@ public class Processor {
 	RegTable rt;
 	Memory m;
 	DataCache datacache;
+	int hits;
+	int misses;
 	public Processor(RegTable rt, Memory m , DataCache datacache) {
 		this.rt = rt;
 		this.m = m;
@@ -59,13 +63,37 @@ public class Processor {
 		int address = regb + imm;
 		if(insTable[0].equals("LW")){
 			int regaIndex = Integer.parseInt(insTable[1].substring(1));
-			rt.setReg(regaIndex, m.getDataMemory(address));
+			String word = datacache.findWord(address);
+			if(word == null){
+				misses++;
+				int startAddress = getStartAddress(address);
+				address = startAddress;
+				ArrayList<String> data = new ArrayList<String>();
+				for(int i = 0; i < datacache.wordsperBlock; i++ ){
+					data.add(m.getDataMemory(address++));
+				}
+				datacache.addblock(startAddress, data);
+				
+			}
+			else{
+				rt.setReg(regaIndex, word);
+				hits++;
+			}
+			
 			
 		} else {
 			int rega = Integer.parseInt(rt.getReg(Integer.parseInt(insTable[1].substring(1))));
 			m.store(address, rega + "");
 			
 		}
+	}
+	public int getStartAddress(int address){
+		for(int i = address; i > 0 ; i--){
+			if(i%datacache.wordsperBlock == 0){
+				return i;
+			}
+		}
+		return 0;
 	}
 	
 	public void uncondBranch(){
@@ -126,6 +154,9 @@ public class Processor {
 		
 		}
 	
+	}
+	public static int log2(int n){
+		return (int) Math.ceil(Math.log(n)/Math.log(2));
 	}
 
 }
