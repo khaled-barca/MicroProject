@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class Main {
@@ -33,7 +34,7 @@ public class Main {
 		for(Register r:rt.reg){
 			System.out.println(r.getValue()+"\n");
 		}*/
-		System.out.println("Messi".substring(1,3));
+		
 		
 		
 	}

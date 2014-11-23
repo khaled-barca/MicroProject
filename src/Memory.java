@@ -13,12 +13,11 @@ public class Memory {
 		dm[index]=new DataMemory(Data);
 	}
 	public void setInstruction(String instruction){
-		dm[index]=new DataMemory(instruction);
-		index++;
+		dm[index++]=new DataMemory(instruction);
+		
 	}
 	public void setDataMemory(String data){
-		dm[index]=new DataMemory(data);
-		index++;
+		dm[index++]=new DataMemory(data);
 	}
 	
 	

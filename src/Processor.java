@@ -62,6 +62,7 @@ public class Processor {
 		int imm = Integer.parseInt(insTable[3]);
 		int address = regb + imm;
 		if(insTable[0].equals("LW")){
+			// load
 			int regaIndex = Integer.parseInt(insTable[1].substring(1));
 			String word = datacache.findWord(address);
 			if(word == null){
@@ -82,11 +83,13 @@ public class Processor {
 			
 			
 		} else {
+			// store
 			int rega = Integer.parseInt(rt.getReg(Integer.parseInt(insTable[1].substring(1))));
 			m.store(address, rega + "");
 			
 		}
 	}
+	
 	public int getStartAddress(int address){
 		for(int i = address; i > 0 ; i--){
 			if(i%datacache.wordsperBlock == 0){
@@ -157,6 +160,16 @@ public class Processor {
 	}
 	public static int log2(int n){
 		return (int) Math.ceil(Math.log(n)/Math.log(2));
+	}
+	
+	public void increment_age(){
+		for(ArrayList<DataCacheEntry> array: datacache.dataCache){
+			for(DataCacheEntry dce : array){
+				if(dce !=null){
+					dce.age++;
+				}
+			}
+		}
 	}
 
 }
