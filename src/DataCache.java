@@ -38,6 +38,7 @@ public class DataCache {
 		String offset = Address16bit.substring(16 - offsetLength);
 		String tag = Address16bit.substring(0,tagLength);
 		String index = type.equals("fully associative") ? "":Address16bit.substring(tagLength ,indexLength + tagLength );
+		System.out.println("tits");
 		if(index.equals("")){
 			// fully asscoiative
 			for(DataCacheEntry dce:dataCache.get(0)){
