@@ -42,16 +42,16 @@ public class DataCache {
 			// fully asscoiative
 			for(DataCacheEntry dce:dataCache.get(0)){
 				if(dce != null && dce.tag.equals(tag)){
-					dce.age = -1;
+					dce.age = 0;
 					return dce.data.get(Integer.parseInt(offset, 2)/2);
 				}
 			}
 			return null;
 		}
 		else{
-			for(DataCacheEntry dce:dataCache.get(Integer.parseInt(index))){
+			for(DataCacheEntry dce:dataCache.get(Integer.parseInt(index,2))){
 				if(dce != null && dce.tag.equals(tag)){
-					dce.age = -1;
+					dce.age = 0;
 					return dce.data.get(Integer.parseInt(offset, 2)/2);
 				}
 			}
@@ -62,10 +62,8 @@ public class DataCache {
 	public DataCacheEntry addblock(int startaddress , ArrayList<String> data){
 		String Address16bit = generate16bitAddress(startaddress);
 		String tag = Address16bit.substring(0,tagLength);
-		DataCacheEntry dce = new DataCacheEntry(wordsperBlock, tag);
-		for(String word:data){
-			dce.addWord(word);
-		}
+		DataCacheEntry dce = new DataCacheEntry(wordsperBlock, tag , startaddress);
+		dce.data = data;
 		if(type.equals("fully associative")){
 			if(dataCache.get(0) == null){
 				// empty cache
@@ -81,20 +79,20 @@ public class DataCache {
 				DataCacheEntry toBeReplaced = dataCache.get(0).get(0);
 				int i = 0 ,toBeReplacedIndex = 0;
 				for(DataCacheEntry block : dataCache.get(0)){
-					if(block.age > maximum_age){
+					if(block !=null && block.age > maximum_age){
 						maximum_age = block.age;
 						toBeReplaced = block;
 						toBeReplacedIndex = i;
 					}
 					i++;	
 				}
-				dataCache.get(0).remove(toBeReplacedIndex);
-				dataCache.get(0).add(toBeReplacedIndex, dce);
+				dataCache.get(0).set(toBeReplacedIndex, dce);
 				return toBeReplaced;
 				
 				
 			}
 			else{
+				// can add block without replacement
 				dataCache.get(0).add(dce);
 				return null;
 			}
@@ -106,13 +104,13 @@ public class DataCache {
 			datac.add(dce);
 			if(dataCache.get(index) == null){
 				// empty cache entry
+				// can add block without replacement
 				dataCache.add(index, datac);
 				return null;
 			}
 			else{
 				DataCacheEntry toBeReplaced = dataCache.get(index).get(0);
-				dataCache.remove(index);
-				dataCache.add(index, datac);
+				dataCache.set(index, datac);
 				return toBeReplaced;
 				
 				// replacement
@@ -122,9 +120,9 @@ public class DataCache {
 			// n way associative
 			if(dataCache.get(index) == null){
 				// empty cache
-				ArrayList<DataCacheEntry> datac = new ArrayList<DataCacheEntry>();
-				datac.add(dce);
-				dataCache.add(index, datac);
+				ArrayList<DataCacheEntry> set = new ArrayList<DataCacheEntry>();
+				set.add(dce);
+				dataCache.add(index, set);
 				return null;
 			}
 			else if(dataCache.get(index).size() < associativity){
@@ -137,20 +135,65 @@ public class DataCache {
 				DataCacheEntry toBeReplaced = dataCache.get(index).get(0);
 				int i = 0,toBeReplacedIndex = 0;
 				for(DataCacheEntry block : dataCache.get(index)){
-					if(block.age > maximum_age){
+					if(block!=null && block.age > maximum_age){
 						maximum_age = block.age;
 						toBeReplaced = block;
 						toBeReplacedIndex = i;
 					}
 					i++;	
 				}
-				dataCache.get(index).remove(toBeReplacedIndex);
-				dataCache.get(index).add(toBeReplacedIndex, dce);
+				dataCache.get(index).set(toBeReplacedIndex, dce);
 				return toBeReplaced;
 				
 			}
 			
 		}
+		}
+		
+	}
+	public boolean modify_block(int address , String word){
+		String address16bit = generate16bitAddress(address);
+		int offset = getOffset(address16bit);
+		String tag = getTag(address16bit);
+		if(type.equals("fully associative")){
+			for(DataCacheEntry block :dataCache.get(0)){
+				if(block !=null && block.tag.equals(tag)){
+					block.data.set(offset/2, word);
+					block.dirty=true;
+					return true;
+				}
+			}
+			return false;
+			
+		}
+		else 
+		{
+			int index = getIndex(address16bit);
+			if(type.equals("direct mapped")){
+				ArrayList<DataCacheEntry> block = dataCache.get(index);
+				if(block != null){
+					if(block.get(0) !=null){
+						block.get(0).data.set(offset/2, word);
+						block.get(0).dirty =true;
+						return true;
+					}
+				}
+				return false;
+				
+			}
+			else{
+				// n way associative
+				ArrayList<DataCacheEntry> set = dataCache.get(index);
+				for(DataCacheEntry block:set){
+					if(block !=null && block.tag.equals(tag)){
+						block.data.set(offset/2, word);
+						block.dirty = true;
+						return true;
+					}
+				}
+				return false;
+			}
+			
 		}
 		
 	}
@@ -169,5 +212,15 @@ public class DataCache {
 	public static int log2(int n){
 		return (int) Math.ceil(Math.log(n)/Math.log(2));
 	}
+	public int getIndex(String address16bit){
+		return Integer.parseInt(address16bit.substring(tagLength ,indexLength + tagLength ),2);
+	}
+    public int getOffset(String address16bit){
+    	return Integer.parseInt(address16bit.substring(16 - offsetLength));
+	}
+    public String getTag(String address16bit){
+    	return address16bit.substring(0,tagLength);
+    	
+    }
 
 }

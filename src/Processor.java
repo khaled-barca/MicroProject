@@ -9,10 +9,12 @@ public class Processor {
 	DataCache datacache;
 	int hits;
 	int misses;
-	public Processor(RegTable rt, Memory m , DataCache datacache) {
+	Write_Policy write_policy;
+	public Processor(RegTable rt, Memory m , DataCache datacache , Write_Policy wp) {
 		this.rt = rt;
 		this.m = m;
 		this.datacache = datacache;
+		write_policy = wp;
 		process();
 	}
 	public void process(){
@@ -67,25 +69,62 @@ public class Processor {
 			String word = datacache.findWord(address);
 			if(word == null){
 				misses++;
+				word = m.getDataMemory(address);
+				// caching entire block from memory
 				int startAddress = getStartAddress(address);
 				address = startAddress;
 				ArrayList<String> data = new ArrayList<String>();
 				for(int i = 0; i < datacache.wordsperBlock; i++ ){
 					data.add(m.getDataMemory(address++));
 				}
-				datacache.addblock(startAddress, data);
+				DataCacheEntry replaced_block = datacache.addblock(startAddress, data);
+				if(replaced_block != null){
+					// replacement takes place
+					if(write_policy == Write_Policy.WRITE_BACK && replaced_block.dirty){
+						// write replaced block to memory
+						for(String w : replaced_block.data ){
+							m.store(replaced_block.startaddress++, w);
+						}
+						
+					}
+				}
 				
 			}
 			else{
-				rt.setReg(regaIndex, word);
 				hits++;
 			}
 			
-			
+			rt.setReg(regaIndex, word);
 		} else {
 			// store
 			int rega = Integer.parseInt(rt.getReg(Integer.parseInt(insTable[1].substring(1))));
-			m.store(address, rega + "");
+			if(write_policy == Write_Policy.WRITE_BACK){
+				if(!datacache.modify_block(address, rega+"")){
+					ArrayList<String> data = new ArrayList<String>();
+					String address16bit = datacache.generate16bitAddress(address);
+					int startaddress = getStartAddress(address);
+					int offset = datacache.getOffset(address16bit);
+					data.add(offset/2, rega+"");
+					DataCacheEntry replaced_block = datacache.addblock(startaddress,data);
+					if(replaced_block != null && replaced_block.dirty){
+						for(String w : replaced_block.data ){
+							m.store(replaced_block.startaddress++, w);
+						}
+					}
+				}
+				
+			}
+			else{
+				m.store(address, rega + "");
+				int startaddress = getStartAddress(address);
+				ArrayList<String> data = new ArrayList<String>();
+				for(int i = 0; i < datacache.wordsperBlock; i++ ){
+					data.add(m.getDataMemory(startaddress++));
+				}
+				datacache.addblock(startaddress, data);
+				
+			}
+			
 			
 		}
 	}

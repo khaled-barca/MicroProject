@@ -8,14 +8,15 @@ import java.util.ArrayList;
 public class Main {
 
 	public static void main(String[] args) {
-		/*Memory m = new Memory();
+		Memory m = new Memory();
 		RegTable rt = new RegTable();
+		DataCache cache = new DataCache(1, 1, 2);
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader("instructions"));
 			String line ="";
 			try {
 				while ((line = reader.readLine()) != null) {
-					if(line.split(" ").length !=0){
+					if(line.split(" ").length >1){
 						m.setInstruction(line);
 					}
 					else{
@@ -30,10 +31,10 @@ public class Main {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		//Processor p = new Processor(rt,m);
+		Processor p = new Processor(rt,m,cache,Write_Policy.WRITETHROUGH);
 		for(Register r:rt.reg){
 			System.out.println(r.getValue()+"\n");
-		}*/
+		}
 		
 		
 		

@@ -6,15 +6,19 @@ public class DataCacheEntry {
 	ArrayList<String> data;
 	int wordsperblock;
 	int age;
-	public DataCacheEntry(int wordsperblock , String tag) {
+	boolean dirty;
+	int startaddress;
+	public DataCacheEntry(int wordsperblock , String tag , int address) {
 		this.wordsperblock = wordsperblock;
 		this.tag = tag;
 		age = 0;
 		data = new ArrayList<String>();
+		startaddress = address;
+		dirty = false;
 		
 	}
 	public boolean addWord(String word){
-		if(data!=null && this.data.size() == wordsperblock){
+		if(this.data.size() == wordsperblock){
 			return false;
 		}
 		else{
